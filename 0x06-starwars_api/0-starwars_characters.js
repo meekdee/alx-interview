@@ -2,29 +2,18 @@
 
 const request = require('request');
 
-// Ensure the movie ID is provided
-if (process.argv.length < 3) {
-  console.error('Usage: ./0-starwars_characters.js <movie_id>');
-  process.exit(1);
-}
-
 const movieId = process.argv[2];
+const url = `https://swapi-api.hbtn.io/api/films/${movieId}/`;
 
-// Fetch movie details
-request('https://swapi-api.hbtn.io/api/films/' + movieId, function (err, res, body) {
-  if (err) throw err;
-
-  const actors = JSON.parse(body).characters;
-  exactOrder(actors, 0);
+request(url, function (error, response, body) {
+  if (!error && response.statusCode === 200) {
+    const characters = JSON.parse(body).characters;
+    characters.forEach((character) => {
+      request(character, function (error, response, body) {
+        if (!error && response.statusCode === 200) {
+          console.log(JSON.parse(body).name);
+        }
+      });
+    });
+  }
 });
-
-const exactOrder = (actors, x) => {
-  if (x === actors.length) return;
-
-  request(actors[x], function (err, res, body) {
-    if (err) throw err;
-
-    console.log(JSON.parse(body).name);
-    exactOrder(actors, x + 1);
-  });
-};
